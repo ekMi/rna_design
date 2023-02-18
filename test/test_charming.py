@@ -57,7 +57,8 @@ if __name__ == '__main__':
     df = pd.DataFrame(zip(list(minmax_native_ecoli), list(minmax_native_scer), list(min_max_harmonized[0]), list(min_max_harmonized[1]), list(min_max_harmonized[2])),
                       columns=['wt_ecoli', 'wt_scer', harmonized_rpoD[0].get_name(), harmonized_rpoD[1].get_name(), harmonized_rpoD[2].get_name()])
 
+    print(df)
     fig = px.line(df)
     fig.update_yaxes(range=[-100, 100])
-    fig.write_image("images/fig_rpoD_charming_scer_minmax.jpeg")
+    fig.write_image("images/fig_rpoD_charming_rando_freq_scer_minmax.jpeg")
 

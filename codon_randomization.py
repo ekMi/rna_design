@@ -52,12 +52,12 @@ def get_random_codons_pool_for_each_aa(codon_freq_table, count_of_each_aa):
 
 def randomize(prot, cu):
     pool_of_codons = get_random_codons_pool_for_each_aa(cu.get_relative_codon_freq_table(), prot.amino_acid_counts)
-    harmonized_sequence = ''
+    randomized_sequence = ''
     for aa in prot.get_aa_seq():
-        harmonized_sequence += pool_of_codons[aa].pop(0)
+        randomized_sequence += pool_of_codons[aa].pop(0)
 
-    harmonized_prot = Protein(prot.get_name(), harmonized_sequence, 'dna')
-    return harmonized_prot
+    randomized_prot = Protein(prot.get_name(), randomized_sequence, 'dna')
+    return randomized_prot
 
 
 if __name__ == '__main__':

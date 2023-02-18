@@ -4,6 +4,7 @@ from cai_profile import cai_profile
 from codon_usage import CodonUsage
 from protein import Protein
 import random
+from codon_randomization import randomize
 from scipy.stats import pearsonr
 
 AA_TO_CODON_DICT = {
@@ -133,7 +134,7 @@ def distance_to_target_reduction(protein_to_harmonize: Protein, target_vals, ini
                         codon_to_replace_freq = dest_freq_table[codon_to_replace]
                         direction = above_below[i - 1]
                         replace_codon = get_replace_codon(codons_possibilities, codon_to_replace_freq,
-                                                              dest_freq_table, direction)
+                                                          dest_freq_table, direction)
                         if replace_codon is not None:
                             prot_seq_harmo[j] = replace_codon
 
@@ -154,14 +155,24 @@ def distance_to_target_reduction(protein_to_harmonize: Protein, target_vals, ini
     return protein_harmonized
 
 
-def generate_random_seq(input_protein: Protein, nb_of_sequence):
+def generate_random_seq(input_protein: Protein, nb_of_sequences):
     random_protein_sequences = []
     input_aa_seq = input_protein.get_aa_seq()
-    for i in range(nb_of_sequence):
+    for i in range(nb_of_sequences):
         seq = []
         for aa in input_aa_seq:
             seq.append(AA_TO_CODON_DICT[aa][random.randint(0, len(AA_TO_CODON_DICT[aa]) - 1)])
         prot = Protein(f'{input_protein.get_name()}Random{str(i)}', "".join(seq), 'dna')
+        random_protein_sequences.append(prot)
+
+    return random_protein_sequences
+
+
+def generate_random_seq_freq_conserved(input_protein: Protein, nb_of_sequences: int, dest_cu: CodonUsage):
+    random_protein_sequences = []
+    for i in range(nb_of_sequences):
+        prot = randomize(input_protein, dest_cu)
+        prot.set_name(f'{prot.get_name()}Random{str(i)}')
         random_protein_sequences.append(prot)
 
     return random_protein_sequences
@@ -174,8 +185,11 @@ def charming(input_protein: Protein, init_cu_table: CodonUsage, dest_cu_table: C
     target_profile = profile_methods[codon_profile_method](input_protein, sliding_window, init_cu_table)
 
     random_protein_sequences = [Protein(f'{input_protein.get_name()}RodriguezInit', input_protein.get_dna_seq(), 'dna')]
+    #
+    # random_protein_sequences.extend(generate_random_seq(input_protein, number_output * 10 - 1))
 
-    random_protein_sequences.extend(generate_random_seq(input_protein, number_output * 10 - 1))
+    random_protein_sequences.extend(
+        generate_random_seq_freq_conserved(input_protein, number_output * 10 - 1, dest_cu_table))
 
     harmonized_proteins = []
     for prot_id, random_prot in enumerate(random_protein_sequences):
@@ -189,11 +203,11 @@ def charming(input_protein: Protein, init_cu_table: CodonUsage, dest_cu_table: C
 
         # this is where the magic happens
         harmonized_prot = distance_to_target_reduction(init_prot, target_profile, init_vals, dest_cu_table,
-                                                      profile_methods[codon_profile_method], sliding_window)
+                                                       profile_methods[codon_profile_method], sliding_window)
 
         final_vals = profile_methods[codon_profile_method](harmonized_prot, sliding_window, dest_cu_table)
         corr, _ = pearsonr(target_profile, final_vals)
-        harmonized_proteins.append((corr,harmonized_prot))
+        harmonized_proteins.append((corr, harmonized_prot))
 
     harmonized_proteins.sort(reverse=True)
 
