@@ -1,50 +1,14 @@
 import pandas as pd
 from scipy.stats import pearsonr
+from utils.codon_aa_dict import CODON_SIZE, AA_TO_CODON_DICT, CODON_TO_AA_DICT
 
-
-CODON_SIZE = 3
-
-AA_TO_CODON_DICT = {
-    'S': ['TCA', 'TCC', 'TCT', 'TCG', 'AGC', 'AGT'],
-    'R': ['AGA', 'CGT', 'CGA', 'AGG', 'CGG', 'CGC'],
-    'L': ['TTG', 'CTC', 'TTA', 'CTT', 'CTA', 'CTG'],
-    'P': ['CCG', 'CCT', 'CCA', 'CCC'],
-    'T': ['ACT', 'ACG', 'ACC', 'ACA'],
-    'G': ['GGG', 'GGC', 'GGT', 'GGA'],
-    'V': ['GTC', 'GTG', 'GTA', 'GTT'],
-    'A': ['GCA', 'GCT', 'GCC', 'GCG'],
-    '*': ['TGA', 'TAA', 'TAG'],  # Stop codons
-    'I': ['ATC', 'ATA', 'ATT'],
-    'N': ['AAT', 'AAC'],
-    'D': ['GAT', 'GAC'],
-    'E': ['GAA', 'GAG'],
-    'F': ['TTC', 'TTT'],
-    'H': ['CAC', 'CAT'],
-    'K': ['AAG', 'AAA'],
-    'Y': ['TAT', 'TAC'],
-    'C': ['TGC', 'TGT'],
-    'Q': ['CAG', 'CAA'],
-    'W': ['TGG'],
-    'M': ['ATG']
-}
-
-CODON_TO_AA_DICT = {'TCA': 'S', 'AAT': 'N', 'TGG': 'W', 'GAT': 'D', 'GAA': 'E', 'TTC': 'F', 'CCG': 'P',
-                    'ACT': 'T', 'GGG': 'G', 'ACG': 'T', 'AGA': 'R', 'TTG': 'L', 'GTC': 'V', 'GCA': 'A',
-                    'TGA': '*', 'CGT': 'R', 'CAC': 'H', 'CTC': 'L', 'CGA': 'R', 'GCT': 'A', 'ATC': 'I',
-                    'ATA': 'I', 'TTT': 'F', 'TAA': '*', 'GTG': 'V', 'GCC': 'A', 'GAG': 'E', 'CAT': 'H',
-                    'AAG': 'K', 'AAA': 'K', 'GCG': 'A', 'TCC': 'S', 'GGC': 'G', 'TCT': 'S', 'CCT': 'P',
-                    'GTA': 'V', 'AGG': 'R', 'CCA': 'P', 'TAT': 'Y', 'ACC': 'T', 'TCG': 'S', 'ATG': 'M',
-                    'TTA': 'L', 'TGC': 'C', 'GTT': 'V', 'CTT': 'L', 'CAG': 'Q', 'CCC': 'P', 'ATT': 'I',
-                    'ACA': 'T', 'AAC': 'N', 'GGT': 'G', 'AGC': 'S', 'CGG': 'R', 'TAG': '*', 'CGC': 'R',
-                    'AGT': 'S', 'CTA': 'L', 'CAA': 'Q', 'CTG': 'L', 'GGA': 'G', 'TGT': 'C', 'TAC': 'Y',
-                    'GAC': 'D'}
 
 def delta_min_max(minmax1, minmax2):
-    '''
+    """
     :param minmax1: minmax profile of protein 1 (a list of values)
     :param minmax2: minmax profile of protein 2 (a list of values)
     :return: the sum of the  absolute difference between each value of both lists divided by the number of values
-    '''
+    """
     if len(minmax1) != len(minmax2):
         raise ValueError('Both MinMax profiles must have the same length')
 
@@ -54,12 +18,13 @@ def delta_min_max(minmax1, minmax2):
 
     return sum(absolute_differences)/len(absolute_differences)
 
+
 def correlation_min_max(minmax1, minmax2):
-    '''
+    """
     :param minmax1: minmax profile of protein 1 (a list of values)
     :param minmax2: minmax profile of protein 2 (a list of values)
     :return: the pearson correlation between minmax1 and minmax2 values
-    '''
+    """
     if len(minmax1) != len(minmax2):
         raise ValueError('Both MinMax profiles must have the same length')
 
@@ -68,8 +33,6 @@ def correlation_min_max(minmax1, minmax2):
 
     corr, _ = pearsonr(list1, list2)
     return corr
-
-
 
 
 def average_min_max_codon_freq_per_aa(cu_table):
@@ -88,23 +51,38 @@ def average_min_max_codon_freq_per_aa(cu_table):
 
 
 def calculate_min_max(protein, window_size, cu_table, sliding_size=1):
+    """
+
+    :param protein: the protein on which calculate the minmax profile
+    :param window_size: the window size used to calculate minmax
+    :param cu_table: the cu table of the species in which the protein is expressed
+    :param sliding_size: the sliding size to move the window
+    :return: a list of value representing the minmax profile
+    """
     min_max = []
     average_min_max_for_each_aa = average_min_max_codon_freq_per_aa(cu_table)
     codon_list = protein.get_codon_list()
+
+    # initialize the beginning of the sequence with 0
     for i in range(int(window_size / 2)):
         min_max.append(0)
 
+    # start minimax calculation
     for i in range(0, len(protein.get_codon_list()) - window_size, sliding_size):
+        # extract the codons of the window to be analyzed
         window = codon_list[i:i + window_size]
 
+        # get the average usage frequency for each aa and the current usage frequency of the window
         x_avg = sum([average_min_max_for_each_aa[CODON_TO_AA_DICT[codon]]['average'] for codon in window]) / window_size
         x = sum([cu_table.get_codon_usage_table()[codon] for codon in window]) / window_size
 
         if x > x_avg:
+            # if the current is above the average, compute Max value and add it to the list
             x_max = sum([average_min_max_for_each_aa[CODON_TO_AA_DICT[codon]]['max'] for codon in window]) / window_size
             per_max = round((x - x_avg) / (x_max - x_avg) * 100, 2)
             min_max.append(per_max)
         else:
+            # else compute Min value and add it to the list
             x_min = sum([average_min_max_for_each_aa[CODON_TO_AA_DICT[codon]]['min'] for codon in window]) / window_size
             per_min = - round(((x_avg - x) / (x_avg - x_min)) * 100, 2)
             min_max.append(per_min)
@@ -118,4 +96,3 @@ def calculate_min_max(protein, window_size, cu_table, sliding_size=1):
             min_max.append(0)
 
     return min_max
-

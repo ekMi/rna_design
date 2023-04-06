@@ -1,7 +1,7 @@
-from protein import Protein
-from codon_usage import CodonUsage
-from min_max import calculate_min_max
-from cai_profile import cai_profile
+from utils.protein import Protein
+from codon_usage.codon_usage import CodonUsage
+from codon_usage.min_max import calculate_min_max
+from codon_usage.cai_profile import cai_profile
 import pandas as pd
 import plotly.express as px
 
@@ -10,8 +10,8 @@ if __name__ == '__main__':
     CODON_WINDOW_SIZE = 10
     SLIDING_SIZE = 1
 
-    cu_table = CodonUsage('../test_files/CUB_HiveCut_Ecoli_K12.txt', 'cub')
-    protein_file = open('../test_files/test_proteins.txt', 'r')
+    cu_table = CodonUsage('test_files/CUB_HiveCut_Ecoli_K12.txt', 'cub')
+    protein_file = open('test_files/test_proteins.txt', 'r')
 
     lines = protein_file.readlines()
 

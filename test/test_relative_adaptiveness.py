@@ -1,4 +1,4 @@
-from codon_usage import CodonUsage
+from codon_usage.codon_usage import CodonUsage
 import plotly.express as px
 import pandas as pd
 import os
@@ -28,9 +28,9 @@ AA_TO_CODON_DICT = {
 }
 
 if __name__ == '__main__':
-    cub_hivecut = CodonUsage('../test_files/CUB_HiveCut_Ecoli_K12.txt', 'cub').get_relative_codon_freq_table()
-    cub_kazusa = CodonUsage('../test_files/CUB_Kazusa_Ecoli_K12.txt', 'cub').get_relative_codon_freq_table()
-    cub_computed = CodonUsage('../test_files/VeryHighLevelExpressionEColi.txt').get_relative_codon_freq_table()
+    cub_hivecut = CodonUsage('test_files/CUB_HiveCut_Ecoli_K12.txt', 'cub').get_relative_codon_freq_table()
+    cub_kazusa = CodonUsage('test_files/CUB_Kazusa_Ecoli_K12.txt', 'cub').get_relative_codon_freq_table()
+    cub_computed = CodonUsage('test_files/VeryHighLevelExpressionEColi.txt').get_relative_codon_freq_table()
 
     heatmap = pd.DataFrame(columns=['Amino Acid', 'Codon', 'Kazusa', 'Hive Cut', 'Computed'])
 

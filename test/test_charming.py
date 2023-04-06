@@ -1,8 +1,8 @@
-from protein import Protein
-from codon_usage import CodonUsage
-from cai import calculate_cai
-from min_max import calculate_min_max, delta_min_max, correlation_min_max
-from charming import charming
+from utils.protein import Protein
+from codon_usage.codon_usage import CodonUsage
+from codon_usage.cai import calculate_cai
+from codon_usage.min_max import calculate_min_max, delta_min_max, correlation_min_max
+from codon_bias_optimizations.charming import charming
 import plotly.express as px
 import pandas as pd
 
@@ -11,15 +11,15 @@ if __name__ == '__main__':
     CODON_WINDOW_SIZE = 10
     CODON_SHIFT = 1
 
-    cu_table_ecoli = CodonUsage('../test_files/CUB_HiveCut_Ecoli_K12.txt', 'cub')
-    cu_table_scer = CodonUsage('../test_files/ScerCUB.txt', 'cub')
-    protein_file = open('../test_files/test_proteins.txt', 'r')
+    cu_table_ecoli = CodonUsage('test_files/CUB_HiveCut_Ecoli_K12.txt', 'cub')
+    cu_table_scer = CodonUsage('test_files/ScerCUB.txt', 'cub')
+    protein_file = open('test_files/test_proteins.txt', 'r')
 
     lines = protein_file.readlines()
 
     proteins = []
     for count, line in enumerate(lines):
-        if ":" in line:
+        if ">" in line:
             if count != 0:
                 proteins.append(Protein(protein_name, sequence, 'dna'))
             sequence = ""

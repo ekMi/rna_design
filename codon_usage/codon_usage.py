@@ -1,4 +1,4 @@
-CODON_SIZE = 3
+from utils.codon_aa_dict import AA_TO_CODON_DICT, CODON_TO_AA_DICT, CODON_SIZE
 
 CODON_LIST = ['TCA', 'AAT', 'TGG', 'GAT', 'GAA', 'TTC', 'CCG', 'ACT', 'GGG', 'ACG', 'AGA', 'TTG', 'GTC', 'GCA',
               'TGA', 'CGT', 'CAC', 'CTC', 'CGA', 'GCT', 'ATC', 'ATA', 'TTT', 'TAA', 'GTG', 'GCC', 'GAG', 'CAT',
@@ -6,45 +6,10 @@ CODON_LIST = ['TCA', 'AAT', 'TGG', 'GAT', 'GAA', 'TTC', 'CCG', 'ACT', 'GGG', 'AC
               'TTA', 'TGC', 'GTT', 'CTT', 'CAG', 'CCC', 'ATT', 'ACA', 'AAC', 'GGT', 'AGC', 'CGG', 'TAG', 'CGC',
               'AGT', 'CTA', 'CAA', 'CTG', 'GGA', 'TGT', 'TAC', 'GAC']
 
-AA_TO_CODON_DICT = {
-    'S': ['TCA', 'TCC', 'TCT', 'TCG', 'AGC', 'AGT'],
-    'R': ['AGA', 'CGT', 'CGA', 'AGG', 'CGG', 'CGC'],
-    'L': ['TTG', 'CTC', 'TTA', 'CTT', 'CTA', 'CTG'],
-    'P': ['CCG', 'CCT', 'CCA', 'CCC'],
-    'T': ['ACT', 'ACG', 'ACC', 'ACA'],
-    'G': ['GGG', 'GGC', 'GGT', 'GGA'],
-    'V': ['GTC', 'GTG', 'GTA', 'GTT'],
-    'A': ['GCA', 'GCT', 'GCC', 'GCG'],
-    '*': ['TGA', 'TAA', 'TAG'],  # Stop codons
-    'I': ['ATC', 'ATA', 'ATT'],
-    'N': ['AAT', 'AAC'],
-    'D': ['GAT', 'GAC'],
-    'E': ['GAA', 'GAG'],
-    'F': ['TTC', 'TTT'],
-    'H': ['CAC', 'CAT'],
-    'K': ['AAG', 'AAA'],
-    'Y': ['TAT', 'TAC'],
-    'C': ['TGC', 'TGT'],
-    'Q': ['CAG', 'CAA'],
-    'W': ['TGG'],
-    'M': ['ATG']
-}
-
-CODON_TO_AA_DICT = {'TCA': 'S', 'AAT': 'N', 'TGG': 'W', 'GAT': 'D', 'GAA': 'E', 'TTC': 'F', 'CCG': 'P',
-                    'ACT': 'T', 'GGG': 'G', 'ACG': 'T', 'AGA': 'R', 'TTG': 'L', 'GTC': 'V', 'GCA': 'A',
-                    'TGA': '*', 'CGT': 'R', 'CAC': 'H', 'CTC': 'L', 'CGA': 'R', 'GCT': 'A', 'ATC': 'I',
-                    'ATA': 'I', 'TTT': 'F', 'TAA': '*', 'GTG': 'V', 'GCC': 'A', 'GAG': 'E', 'CAT': 'H',
-                    'AAG': 'K', 'AAA': 'K', 'GCG': 'A', 'TCC': 'S', 'GGC': 'G', 'TCT': 'S', 'CCT': 'P',
-                    'GTA': 'V', 'AGG': 'R', 'CCA': 'P', 'TAT': 'Y', 'ACC': 'T', 'TCG': 'S', 'ATG': 'M',
-                    'TTA': 'L', 'TGC': 'C', 'GTT': 'V', 'CTT': 'L', 'CAG': 'Q', 'CCC': 'P', 'ATT': 'I',
-                    'ACA': 'T', 'AAC': 'N', 'GGT': 'G', 'AGC': 'S', 'CGG': 'R', 'TAG': '*', 'CGC': 'R',
-                    'AGT': 'S', 'CTA': 'L', 'CAA': 'Q', 'CTG': 'L', 'GGA': 'G', 'TGT': 'C', 'TAC': 'Y',
-                    'GAC': 'D'}
-
 
 class CodonUsage:
     """
-    Compute codon usage table based on a reference sequence contained in a *.txt file
+    Compute codon usage table based on a reference sequence contained in a *.txt file (with DNA nt only)
     or from a cub table retrieved from a database
     This table serve as the basis to compute the RSCU, relative adaptiveness, relative codon frequency tables,
     relative codon ranking table
@@ -56,6 +21,7 @@ class CodonUsage:
         lines = full_file.readlines()
 
         if file_format == "sequence":
+            # The cub table must be computed from the full string of the file
             genome = ""
             for line in lines:
                 if not ":" in line:  # skip line containing protein name
@@ -176,5 +142,5 @@ class CodonUsage:
 
 
 if __name__ == '__main__':
-    cu_table = CodonUsage("test_files/VeryHighLevelExpressionEColi.txt")
+    cu_table = CodonUsage("../test/test_files/VeryHighLevelExpressionEColi.txt")
     print(sorted(cu_table.get_rscu_table().items()))

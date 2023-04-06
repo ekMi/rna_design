@@ -1,6 +1,6 @@
-from protein import Protein
-from codon_usage import CodonUsage
-from cai import calculate_cai
+from utils.protein import Protein
+from codon_usage.codon_usage import CodonUsage
+from codon_usage.cai import calculate_cai
 import plotly.express as px
 import pandas as pd
 
@@ -8,8 +8,8 @@ if __name__ == '__main__':
     CODON_WINDOW_SIZE = 15
     SLIDING_SIZE = 5
 
-    cu_table = CodonUsage('../test_files/CUB_HiveCut_Ecoli_K12.txt', 'cub')
-    protein_file = open('../test_files/test_proteins.txt', 'r')
+    cu_table = CodonUsage('test_files/CUB_HiveCut_Ecoli_K12.txt', 'cub')
+    protein_file = open('test_files/test_proteins.txt', 'r')
 
     lines = protein_file.readlines()
 

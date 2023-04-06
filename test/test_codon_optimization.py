@@ -1,15 +1,15 @@
-from protein import Protein
-from codon_usage import CodonUsage
-from cai import calculate_cai
-from min_max import calculate_min_max, correlation_min_max, delta_min_max
-from codon_optimization import optimize
+from utils.protein import Protein
+from codon_usage.codon_usage import CodonUsage
+from codon_usage.cai import calculate_cai
+from codon_usage.min_max import calculate_min_max, correlation_min_max, delta_min_max
+from codon_bias_optimizations.codon_optimization import optimize
 import plotly.express as px
 import pandas as pd
 
 if __name__ == '__main__':
-    cu_table = CodonUsage('../test_files/CUB_HiveCut_Ecoli_K12.txt', 'cub')
-    cu_table_scer = CodonUsage('../test_files/ScerCUB.txt', 'cub')
-    protein_file = open('../test_files/test_proteins.txt', 'r')
+    cu_table = CodonUsage('test_files/CUB_HiveCut_Ecoli_K12.txt', 'cub')
+    cu_table_scer = CodonUsage('test_files/ScerCUB.txt', 'cub')
+    protein_file = open('test_files/test_proteins.txt', 'r')
 
     lines = protein_file.readlines()
 

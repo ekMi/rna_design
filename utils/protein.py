@@ -1,15 +1,5 @@
-CODON_SIZE = 3
+from utils.codon_aa_dict import  CODON_TO_AA_DICT, CODON_SIZE
 
-CODON_TO_AA_DICT = {'TCA': 'S', 'AAT': 'N', 'TGG': 'W', 'GAT': 'D', 'GAA': 'E', 'TTC': 'F', 'CCG': 'P',
-                    'ACT': 'T', 'GGG': 'G', 'ACG': 'T', 'AGA': 'R', 'TTG': 'L', 'GTC': 'V', 'GCA': 'A',
-                    'TGA': '*', 'CGT': 'R', 'CAC': 'H', 'CTC': 'L', 'CGA': 'R', 'GCT': 'A', 'ATC': 'I',
-                    'ATA': 'I', 'TTT': 'F', 'TAA': '*', 'GTG': 'V', 'GCC': 'A', 'GAG': 'E', 'CAT': 'H',
-                    'AAG': 'K', 'AAA': 'K', 'GCG': 'A', 'TCC': 'S', 'GGC': 'G', 'TCT': 'S', 'CCT': 'P',
-                    'GTA': 'V', 'AGG': 'R', 'CCA': 'P', 'TAT': 'Y', 'ACC': 'T', 'TCG': 'S', 'ATG': 'M',
-                    'TTA': 'L', 'TGC': 'C', 'GTT': 'V', 'CTT': 'L', 'CAG': 'Q', 'CCC': 'P', 'ATT': 'I',
-                    'ACA': 'T', 'AAC': 'N', 'GGT': 'G', 'AGC': 'S', 'CGG': 'R', 'TAG': '*', 'CGC': 'R',
-                    'AGT': 'S', 'CTA': 'L', 'CAA': 'Q', 'CTG': 'L', 'GGA': 'G', 'TGT': 'C', 'TAC': 'Y',
-                    'GAC': 'D'}
 AA_LIST = ['S', 'N', 'W', 'D', 'E', 'F', 'P', 'T', 'G', 'R', 'L', 'V', 'A', '*', 'H', 'I', 'K', 'Y', 'M', 'C', 'Q']
 
 
@@ -70,9 +60,9 @@ class Protein:
 
     @property
     def amino_acid_counts(self):
-        '''
+        """
         :return: A dictionary with the number of occurence for each amino acid
-        '''
+        """
         aa_count_dict = {'S': 0, 'N': 0, 'W': 0, 'D': 0, 'E': 0, 'F': 0, 'P': 0, 'T': 0, 'G': 0, 'R': 0, 'L': 0,
                          'V': 0, 'A': 0, '*': 0, 'H': 0, 'I': 0, 'K': 0, 'Y': 0, 'M': 0, 'C': 0, 'Q': 0}
 
@@ -82,6 +72,9 @@ class Protein:
         return aa_count_dict
 
     def get_codon_list(self):
+        """
+        :return: a list of codons (DNA formatted)
+        """
         codon_list = []
         for i in range(0, len(self._DNA_sequence), CODON_SIZE):
             codon_list.append(self._DNA_sequence[i:i+CODON_SIZE])

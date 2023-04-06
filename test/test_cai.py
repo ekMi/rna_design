@@ -1,10 +1,10 @@
-from protein import Protein
-from codon_usage import CodonUsage
-from cai import calculate_cai
+from utils.protein import Protein
+from codon_usage.codon_usage import CodonUsage
+from codon_usage.cai import calculate_cai
 
 if __name__ == '__main__':
-    cu_table = CodonUsage('../test_files/VeryHighLevelExpressionEColi.txt')
-    protein_file = open('../test_files/test_proteins.txt', 'r')
+    cu_table = CodonUsage('test_files/VeryHighLevelExpressionEColi.txt')
+    protein_file = open('test_files/test_proteins.txt', 'r')
 
     lines = protein_file.readlines()
 

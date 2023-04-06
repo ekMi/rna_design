@@ -1,46 +1,13 @@
-from codon_rodriguez_harmonization import rodriguez_harmonization
-from min_max import calculate_min_max, correlation_min_max, delta_min_max
-from cai_profile import cai_profile
-from codon_usage import CodonUsage
-from protein import Protein
+from codon_bias_optimizations.codon_rodriguez_harmonization import rodriguez_harmonization
+from codon_usage.min_max import calculate_min_max
+from codon_usage.cai_profile import cai_profile
+from codon_usage.codon_usage import CodonUsage
+from utils.protein import Protein
+from utils.codon_aa_dict import AA_TO_CODON_DICT, CODON_TO_AA_DICT
 import random
-from codon_randomization import randomize
+from codon_bias_optimizations.codon_randomization import randomize
 from scipy.stats import pearsonr
 
-AA_TO_CODON_DICT = {
-    'S': ['TCA', 'TCC', 'TCT', 'TCG', 'AGC', 'AGT'],
-    'R': ['AGA', 'CGT', 'CGA', 'AGG', 'CGG', 'CGC'],
-    'L': ['TTG', 'CTC', 'TTA', 'CTT', 'CTA', 'CTG'],
-    'P': ['CCG', 'CCT', 'CCA', 'CCC'],
-    'T': ['ACT', 'ACG', 'ACC', 'ACA'],
-    'G': ['GGG', 'GGC', 'GGT', 'GGA'],
-    'V': ['GTC', 'GTG', 'GTA', 'GTT'],
-    'A': ['GCA', 'GCT', 'GCC', 'GCG'],
-    '*': ['TGA', 'TAA', 'TAG'],  # Stop codons
-    'I': ['ATC', 'ATA', 'ATT'],
-    'N': ['AAT', 'AAC'],
-    'D': ['GAT', 'GAC'],
-    'E': ['GAA', 'GAG'],
-    'F': ['TTC', 'TTT'],
-    'H': ['CAC', 'CAT'],
-    'K': ['AAG', 'AAA'],
-    'Y': ['TAT', 'TAC'],
-    'C': ['TGC', 'TGT'],
-    'Q': ['CAG', 'CAA'],
-    'W': ['TGG'],
-    'M': ['ATG']
-}
-
-CODON_TO_AA_DICT = {'TCA': 'S', 'AAT': 'N', 'TGG': 'W', 'GAT': 'D', 'GAA': 'E', 'TTC': 'F', 'CCG': 'P',
-                    'ACT': 'T', 'GGG': 'G', 'ACG': 'T', 'AGA': 'R', 'TTG': 'L', 'GTC': 'V', 'GCA': 'A',
-                    'TGA': '*', 'CGT': 'R', 'CAC': 'H', 'CTC': 'L', 'CGA': 'R', 'GCT': 'A', 'ATC': 'I',
-                    'ATA': 'I', 'TTT': 'F', 'TAA': '*', 'GTG': 'V', 'GCC': 'A', 'GAG': 'E', 'CAT': 'H',
-                    'AAG': 'K', 'AAA': 'K', 'GCG': 'A', 'TCC': 'S', 'GGC': 'G', 'TCT': 'S', 'CCT': 'P',
-                    'GTA': 'V', 'AGG': 'R', 'CCA': 'P', 'TAT': 'Y', 'ACC': 'T', 'TCG': 'S', 'ATG': 'M',
-                    'TTA': 'L', 'TGC': 'C', 'GTT': 'V', 'CTT': 'L', 'CAG': 'Q', 'CCC': 'P', 'ATT': 'I',
-                    'ACA': 'T', 'AAC': 'N', 'GGT': 'G', 'AGC': 'S', 'CGG': 'R', 'TAG': '*', 'CGC': 'R',
-                    'AGT': 'S', 'CTA': 'L', 'CAA': 'Q', 'CTG': 'L', 'GGA': 'G', 'TGT': 'C', 'TAC': 'Y',
-                    'GAC': 'D'}
 
 CANDIDATE_SECTION_LENGTH = 5
 CDR_LENGTH = 2 * CANDIDATE_SECTION_LENGTH
@@ -90,16 +57,6 @@ def get_replace_codon(codons_possibilities, current_codon_freq, dest_freq_table,
                     current_choice = i
 
     return current_choice
-
-    # if direction == 0:
-    #     target_rank = current_codon_rank - 1
-    # else:
-    #     target_rank = current_codon_rank + 1
-    # for codon in codons_possibilities:
-    #     if dest_ranking_table[codon] == target_rank:
-    #         replace_codon = codon
-    #
-    # return replace_codon
 
 
 def distance_to_target_reduction(protein_to_harmonize: Protein, target_vals, init_vals, dest_cu_table: CodonUsage,
@@ -152,7 +109,8 @@ def distance_to_target_reduction(protein_to_harmonize: Protein, target_vals, ini
         if start_dist == total_dist:
             flag += 1
         iteration += 1
-    return protein_harmonized
+
+    return protein_harmonized, iteration
 
 
 def generate_random_seq(input_protein: Protein, nb_of_sequences):
@@ -180,37 +138,47 @@ def generate_random_seq_freq_conserved(input_protein: Protein, nb_of_sequences: 
 
 def charming(input_protein: Protein, init_cu_table: CodonUsage, dest_cu_table: CodonUsage, codon_profile_method='MM',
              number_output=3, sliding_window=10):
+    # depending on the codon profile method, instantiate the relevant function
     profile_methods = {'MM': calculate_min_max, 'CAI': cai_profile}
 
+    # get the profile of the protein using the init_cu_table (the one to mimic)
     target_profile = profile_methods[codon_profile_method](input_protein, sliding_window, init_cu_table)
 
+    # create a list of random proteins
     random_protein_sequences = [Protein(f'{input_protein.get_name()}RodriguezInit', input_protein.get_dna_seq(), 'dna')]
-    #
-    # random_protein_sequences.extend(generate_random_seq(input_protein, number_output * 10 - 1))
 
+    # generate random sequence using the destination CU table
     random_protein_sequences.extend(
         generate_random_seq_freq_conserved(input_protein, number_output * 10 - 1, dest_cu_table))
 
     harmonized_proteins = []
+    iterations = []
     for prot_id, random_prot in enumerate(random_protein_sequences):
-        # use input sequence for rodriguez initialization
+        # use input sequence for rodriguez initialization (the first one ine the random list)
         if prot_id == 0:
             init_prot = rodriguez_harmonization(random_prot, init_cu_table, dest_cu_table)
-            init_vals = profile_methods[codon_profile_method](init_prot, sliding_window, dest_cu_table)
+
         else:
             init_prot = random_prot
-            init_vals = profile_methods[codon_profile_method](init_prot, sliding_window, dest_cu_table)
+
+        init_vals = profile_methods[codon_profile_method](init_prot, sliding_window, dest_cu_table)
 
         # this is where the magic happens
-        harmonized_prot = distance_to_target_reduction(init_prot, target_profile, init_vals, dest_cu_table,
+        harmonized_prot, iteration = distance_to_target_reduction(init_prot, target_profile, init_vals, dest_cu_table,
                                                        profile_methods[codon_profile_method], sliding_window)
 
+        iterations.append(iteration)
+        # compute the profile of the harmonized output
         final_vals = profile_methods[codon_profile_method](harmonized_prot, sliding_window, dest_cu_table)
+        # get the pearson correlation
         corr, _ = pearsonr(target_profile, final_vals)
         harmonized_proteins.append((corr, harmonized_prot))
 
+    # sort the harmonized sequences by there pearson correlation
     harmonized_proteins.sort(reverse=True)
-
+    print(iterations)
+    print(sum(iterations)/len(iterations))
+    # return only the best proteins
     output_proteins = []
     for i in range(number_output):
         output_proteins.append(harmonized_proteins[i][1])
