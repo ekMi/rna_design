@@ -2,7 +2,8 @@ from utils.protein import Protein
 from utils.import_proteins_file import import_proteins
 from codon_usage.codon_usage import CodonUsage
 from codon_ramp import replace_codons_with_rare
-from codon_usage.min_max import calculate_min_max
+from codon_usage.min_max import calculate_min_max, delta_min_max, correlation_min_max
+from codon_usage.cai import calculate_cai
 from codon_bias_optimizations.charming import charming
 from structure_reduction.struct_optimizations import SimulatedAnnealing, StructReduction
 import pandas as pd
@@ -59,18 +60,16 @@ if __name__ == '__main__':
     struct_reduction = StructReduction(struct_reduction_strategy, cu_table_ecoli)
 
     sd = 'AGGAGG'
-    spacer = 'AA'
+    spacer = 'AAAAAAAA'
 
-    best_spacer, best_seq, best_score = struct_reduction.reduce_structure(orf2_alt_start_removed.get_dna_seq(), sd, spacer, 0.4)
-    print(best_score)
+    best_spacer, best_seq, best_score, iter_best = struct_reduction.reduce_structure(orf2_alt_start_removed.get_dna_seq(), sd, spacer, 0.4)
+    print(f'Best score {best_score}')
+    print(f'found after {iter_best} iterations')
     structure, mfe = RNA.fold(sd + best_spacer + best_seq)
+    print('Best sequence:')
     print(sd + best_spacer + best_seq)
+    print('Best structure:')
     print(structure)
-
-    print("Start structure reduced")
-
-
-    best_seq = Protein(orf2.get_name(), best_seq, 'dna')
 
 
     # Génération de la notation PostScript
@@ -79,8 +78,11 @@ if __name__ == '__main__':
 
     # Convertir la notation PostScript en image PNG
     img_file = "rna_folding_optimized_orf2.png"
+
     img = Image.open(ps_file)
     img.save(img_file, "png")
+
+    best_seq = Protein(orf2.get_name(), best_seq, 'dna')
 
     # calculate minmax
     minmax_native_human = calculate_min_max(orf2, CODON_WINDOW_SIZE, cu_table_human, CODON_SHIFT)
@@ -90,9 +92,39 @@ if __name__ == '__main__':
     # output the result in a chart
     df = pd.DataFrame(zip(list(minmax_native_human), list(minmax_native_ecoli), list(min_max_full_best_seq),),
                       columns=['wt_human', 'wt_ecoli', 'optimized_ecoli'])
+    # compute the ratio
+    df['reference'] = df['wt_human'] - df['wt_human']
+    df['ratio_wild_type_ecoli'] = df['wt_ecoli'] - df['wt_human']
+    df['ratio_optimized_ecoli'] = df['optimized_ecoli'] - df['wt_human']
+
+    print(df)
+
+    df.drop(['wt_human', 'wt_ecoli', 'optimized_ecoli'], inplace=True, axis=1)
 
     fig = px.line(df)
     fig.update_yaxes(range=[-100, 100])
-    fig.write_image("/images/fig_orf2_full_workflow.jpeg")
+    fig.write_image("fig_orf2_full_workflow.jpeg")
     fig.show()
+
+    # compute information about codon usage
+    print('CAI:')
+    print(f'Wild type human: {calculate_cai(orf2, cu_table_human)}')
+    print(f'Wild type E coli: {calculate_cai(orf2, cu_table_ecoli)}')
+    print(f'Optimized E coli: {calculate_cai(best_seq, cu_table_ecoli)}')
+
+    print('Delta MinMax fullseq:')
+    print(f'Wild type E coli: {delta_min_max(minmax_native_human, minmax_native_ecoli)}')
+    print(f'Optimized type E coli: {delta_min_max(minmax_native_human,min_max_full_best_seq)}')
+
+    print('Delta MinMax harmo:')
+    print(f'Wild type E coli: {delta_min_max(minmax_native_human[48:], minmax_native_ecoli[48:])}')
+    print(f'Optimized type E coli: {delta_min_max(minmax_native_human[48:],min_max_full_best_seq[48:])}')
+
+    print('Correlation MinMax fullseq:')
+    print(f'Wild type E coli: {correlation_min_max(minmax_native_human, minmax_native_ecoli)}')
+    print(f'Optimized type E coli: {correlation_min_max(minmax_native_human,min_max_full_best_seq)}')
+
+    print('Correlation MinMax harmo:')
+    print(f'Wild type E coli: {correlation_min_max(minmax_native_human[48:], minmax_native_ecoli[48:])}')
+    print(f'Optimized type E coli: {correlation_min_max(minmax_native_human[48:],min_max_full_best_seq[48:])}')
 
