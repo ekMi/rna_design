@@ -10,3 +10,4 @@ scipy==1.10.1
 six==1.16.0
 tenacity==8.2.2
 tzdata==2023.3
+ViennaRNA
