@@ -176,8 +176,6 @@ def charming(input_protein: Protein, init_cu_table: CodonUsage, dest_cu_table: C
 
     # sort the harmonized sequences by there pearson correlation
     harmonized_proteins.sort(reverse=True)
-    print(iterations)
-    print(sum(iterations)/len(iterations))
     # return only the best proteins
     output_proteins = []
     for i in range(number_output):

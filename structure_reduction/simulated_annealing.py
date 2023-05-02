@@ -149,6 +149,7 @@ class SimulatedAnnealing(StructReductionStrategy):
 
             # Update of the best solution found so far
             if new_score < best_score:
+                print(f'New best score found: {new_score}')
                 best_score = new_score
                 best_seq = new_seq
                 best_spacer = new_spacer

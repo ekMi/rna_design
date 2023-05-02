@@ -3,10 +3,10 @@ import RNA
 from utils.import_proteins_file import import_proteins
 from codon_usage.codon_usage import CodonUsage
 from utils.protein import Protein
-from simulated_annealing import SimulatedAnnealing
-from replace_matching import ReplaceMatchingCodonsStrategy
-from all_possible_rna import TestAllRnasStrategy
-from struct_reduction import StructReduction
+from structure_reduction.simulated_annealing import SimulatedAnnealing
+from structure_reduction.replace_matching import ReplaceMatchingCodonsStrategy
+from structure_reduction.all_possible_rna import TestAllRnasStrategy
+from structure_reduction.struct_reduction import StructReduction
 
 
 if __name__ == '__main__':
